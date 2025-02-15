@@ -24,11 +24,10 @@ func changeBalance(usrBalance *float32, amountOfMoney float32, categoriesList []
 		fmt.Printf("Add %f to your balance from %s\n", amountOfMoney, categoriesList[numberOfCategory-1].Name)
 	case "expanse":
 		*usrBalance -= amountOfMoney
+		fmt.Printf("Spent %f from your balance to %s\n", amountOfMoney, categoriesList[numberOfCategory-1].Name)
 	default:
 		fmt.Println("Unknown type of operation")
-		fmt.Printf("Spent %f from your balance to %s\n", amountOfMoney, categoriesList[numberOfCategory-1].Name)
 	}
-	categoriesList[numberOfCategory-1].Value += amountOfMoney
 }
 
 func showAllCategories(categoriesSlice []FinanceCategory) {
@@ -43,7 +42,10 @@ func addToHistory(historySlice *[]HistoryItem, operationType string, categoryOfO
 
 func showHistory(historySlice []HistoryItem) {
 	for i := 0; i < len(historySlice); i++ {
-		fmt.Println(historySlice[i])
+		currentItem := historySlice[i]
+		fmt.Println("--------------------------------------------")
+		fmt.Printf("\nType: %s -- Category name: %s -- Amount of money: %f -- Date: %s\n", currentItem.TypeOfOperation, currentItem.CategoryName, currentItem.AmountOfMoney, currentItem.DateOfOperation.Format("2006-01-02 15:04:05"))
+		fmt.Println("--------------------------------------------")
 	}
 }
 
@@ -55,7 +57,7 @@ func main() {
 
 	for {
 		fmt.Println("")
-		fmt.Println(currentBalance)
+		fmt.Println("Current Balance: ", currentBalance)
 		fmt.Println("")
 		fmt.Println("1 - Add income")
 		fmt.Println("2 - Add expanse")
@@ -70,13 +72,21 @@ func main() {
 		case 1:
 			var incomeValue float32
 			fmt.Println("Add value: ")
-			fmt.Scan(&incomeValue)
+			_, incomeErr := fmt.Scan(&incomeValue)
+			if incomeErr != nil || incomeValue < 0 {
+				fmt.Println("Invalid input. Please enter a positive number.")
+				continue
+			}
 
 			showAllCategories(incomeCategories)
 
 			var categoryNumber int
 			fmt.Println("Choose number of your category: ")
-			fmt.Scan(&categoryNumber)
+			_, categoryErr := fmt.Scan(&categoryNumber)
+			if categoryErr != nil {
+				fmt.Println("This category does not exist")
+				continue
+			}
 
 			changeBalance(&currentBalance, incomeValue, incomeCategories, categoryNumber, "income")
 
@@ -88,13 +98,21 @@ func main() {
 		case 2:
 			var expanseValue float32
 			fmt.Println("Add value: ")
-			fmt.Scan(&expanseValue)
+			_, expanseErr := fmt.Scan(&expanseValue)
+			if expanseErr != nil || expanseValue < 0 {
+				fmt.Println("Invalid input. Please enter a positive number.")
+				continue
+			}
 
 			showAllCategories(expanseCategories)
 
 			var categoryNumber int
 			fmt.Println("Choose number of your category: ")
-			fmt.Scan(&categoryNumber)
+			_, categoryErr := fmt.Scan(&categoryNumber)
+			if categoryErr != nil {
+				fmt.Println("This category does not exist")
+				continue
+			}
 
 			changeBalance(&currentBalance, expanseValue, expanseCategories, categoryNumber, "expanse")
 
@@ -108,11 +126,19 @@ func main() {
 			fmt.Println("1 - income")
 			fmt.Println("2 - expanse")
 			fmt.Println("Enter number of your category type: ")
-			fmt.Scan(&typeOfCategory)
+			_, typeOfCategoryErr := fmt.Scan(&typeOfCategory)
+			if typeOfCategoryErr != nil {
+				fmt.Println("Invalid number of category type. Try again")
+				continue
+			}
 
 			var nameOfCategory string
 			fmt.Println("Enter category name: ")
-			fmt.Scan(&nameOfCategory)
+			_, categoryNameErr := fmt.Scan(&nameOfCategory)
+			if categoryNameErr != nil {
+				fmt.Println("Invalid name of category")
+				continue
+			}
 
 			switch typeOfCategory {
 			case 1:
@@ -122,6 +148,8 @@ func main() {
 			}
 		case 4:
 			showHistory(historyOfOperations)
+		default:
+			fmt.Printf("\n\nIncorrect type of option. Please choose the correct one.\n\n")
 		}
 	}
 }
